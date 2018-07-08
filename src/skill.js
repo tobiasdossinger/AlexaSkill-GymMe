@@ -2,74 +2,74 @@
  * Created by sashthecash on 31/05/2017.
  */
 
- 
-const
-  config               = require( './config' ),
-  AlexaInitialisation = require( './sensory/alexa/AlexaInitialisation' ),
-  Execution            = require( './Execution' ),
-  ComplexAnswer        = require( './sensory/alexa/AlexaComplexAnswer' ),
-  AlexaRes             = require( './sensory/alexa/AlexaResponseVO' ),
-  AlexaReq             = require( './sensory/alexa/AlexaRequestVO' );
 
-let i = 0;
-let initData;
+const
+  config = require('./config'),
+  AlexaInitialisation = require('./sensory/alexa/AlexaInitialisation'),
+  Execution = require('./Execution'),
+  ComplexAnswer = require('./sensory/alexa/AlexaComplexAnswer'),
+  AlexaRes = require('./sensory/alexa/AlexaResponseVO'),
+  AlexaReq = require('./sensory/alexa/AlexaRequestVO')
+
+let i = 0
+let initData
+let dataBase = null
 
 class Skill {
 
   /** @description: LAMBDA function receives alexa request with json data. **/
-  static async handler ( event, context, callback ) {
+  static async handler (event, context, callback) {
 
     // create new AlexaRequest Instance.
-    let alexaRequest = new AlexaReq( event );
-
+    let alexaRequest = new AlexaReq(event)
 
     // ExerciseData nur am Anfang laden
-    if(alexaRequest.dataBase == null){
-      let ex = await AlexaInitialisation.loadSpreadSheetVUI(config.spreadSheetVui, 'EXERCISES');
-      alexaRequest.dataBase = ex //member einer klasse muss nicht deklariert werden
+    if (dataBase == null) {
+      let ex = await AlexaInitialisation.loadSpreadSheetVUI(config.spreadSheetVui, 'EXERCISES')
+      dataBase = ex
     }
 
     /** if initData is there skip API Initialisation */
     let alexaMainChain =
       initData ?
         Promise.resolve(initData) :
-      AlexaInitialisation.loadSpreadSheetVUI( config.spreadSheetVui );
-      
-    let voiceResponse;
+        AlexaInitialisation.loadSpreadSheetVUI(config.spreadSheetVui)
+
+    let voiceResponse
 
     alexaMainChain
-      .then( data => {
+      .then(data => {
         //save initData to RAM
-        initData               = data;
-        alexaRequest.skillData = initData;
-        return alexaRequest;
-      } )
-      .then( Execution.exec )
-      .then( alexaRequest => {
+        initData = data
+        alexaRequest.skillData = initData
+        alexaRequest.dataBase = dataBase
+        return alexaRequest
+      })
+      .then(Execution.exec)
+      .then(alexaRequest => {
         //TODO: use SessionData to log stuff
-        voiceResponse = AlexaRes.getResponse( alexaRequest.answer,
-          alexaRequest.shouldEndSession,
-          Object.assign( {}, alexaRequest.sessionData, {
-            request : ++i,
-            context : context
-          } )
-        );
-        console.log( '📺 ->', voiceResponse );
-        callback( null, voiceResponse );
-      } )
-      .catch( ( err ) => {
-        console.error( err );
-        alexaRequest.intentName = 'Error';
-        alexaRequest.vReq       = err;
-        alexaRequest.answer     = ComplexAnswer.buildComplexAnwser( alexaRequest );
-        voiceResponse           = AlexaRes.getResponse( alexaRequest.answer, true, err );
-        callback( null, voiceResponse );
-      } );
+        voiceResponse = AlexaRes.getResponse(alexaRequest,
+          Object.assign({}, alexaRequest.sessionData, {
+            request: ++i,
+            context: context
+          })
+        )
+        console.log('📺 ->', voiceResponse)
+        callback(null, voiceResponse)
+      })
+      .catch((err) => {
+        console.error(err)
+        alexaRequest.intentName = 'Error'
+        alexaRequest.vReq = err
+        alexaRequest.answer = ComplexAnswer.buildComplexAnwser(alexaRequest)
+        voiceResponse = AlexaRes.getResponse(alexaRequest, true, err)
+        callback(null, voiceResponse)
+      })
 
   }
 }
 
-module.exports = Skill;
+module.exports = Skill
 
 /** Lambda context object ...
  http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html

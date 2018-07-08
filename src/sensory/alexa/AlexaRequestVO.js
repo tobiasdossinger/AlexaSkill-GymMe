@@ -4,131 +4,174 @@
 
 
 const
-		objectPath = require( 'object-path' ),
-		crypto     = require( 'crypto' );
+  objectPath = require('object-path'),
+  crypto = require('crypto')
+  userstore = require('./AlexaStore')
 
 class AlexaRequestVO {
 
-	constructor ( rawData ) {
+  constructor (rawData) {
 
-		this._rawData = rawData;
 
-		this._sessionData = {};
+    //WorkoutPictureURL
+    this._pictureURL = null;
 
-			//Exercise Datenbank
-		this._dataBase = null;
+    //VideoURL
+    this._videoURL = null;
 
-		this._shouldEndSession = true;
+    //WorkoutDescription
+    this._description = null;
 
-		this._locale = objectPath.get( rawData, 'request.locale' );
+    //Exercise Database
+    this._dataBase = null;
 
-		this._requestType = objectPath.get( rawData, 'request.type' );
+    this._rawData = rawData
 
-		this._intentName = objectPath.get( this._rawData, 'request.intent.name' ) || this._requestType;
-		this._intentName = this._intentName.replace( 'AMAZON.', '' );
+    this._sessionData = {}
 
-		let deviceID   = objectPath.get( rawData, 'context.System.device.deviceId' ) || 'noDevice';
-		this._deviceID = crypto.createHash( 'md5' ).update( deviceID ).digest( 'hex' );
 
-		let sessionID   = objectPath.get( rawData, 'session.sessionId' ) || 'noSession';
-		this._sessionID = crypto.createHash( 'md5' ).update( sessionID ).digest( 'hex' );
+    this._shouldEndSession = true
 
-		let userId   = objectPath.get( this._rawData, 'session.user.userId' ) || 'noUserID';
-		this._userId = crypto.createHash( 'md5' ).update( userId ).digest( 'hex' );
+    this._locale = objectPath.get(rawData, 'request.locale')
 
-		this._reqSessionData = objectPath.get( this._rawData, 'session.attributes' ) || {};
+    this._requestType = objectPath.get(rawData, 'request.type')
 
-		// parse Slots to object.
-		let slots   = objectPath.get( rawData, 'request.intent.slots' );
-		this._slots = {};
-		for ( let slot in slots ) { this._slots[ slot ] = slots[ slot ].value;}
+    this._intentName = objectPath.get(this._rawData, 'request.intent.name') || this._requestType
+    this._intentName = this._intentName.replace('AMAZON.', '')
 
-		this._vReq     = {};
-		this._vRes     = {};
-		this._vResLoop = [];
+    let deviceID = objectPath.get(rawData, 'context.System.device.deviceId') || 'noDevice'
+    this._deviceID = crypto.createHash('md5').update(deviceID).digest('hex')
 
-		console.log( '---------------------' );
-		console.log( JSON.stringify( objectPath.get( rawData, 'request' ), null, 4 ) );
-		console.log( JSON.stringify( this._reqSessionData, null, 4 ) );
-		console.log( '---------------------' );
-	}
+    let sessionID = objectPath.get(rawData, 'session.sessionId') || 'noSession'
+    this._sessionID = crypto.createHash('md5').update(sessionID).digest('hex')
 
-	set vReq ( val ) {
-		this._vReq = val;
-	}
+    let userId = objectPath.get(this._rawData, 'session.user.userId') || 'noUserID'
+    this._userId = crypto.createHash('md5').update(userId).digest('hex')
 
-	set vRes ( val ) {
-		this._vRes = val;
-	}
+    this._reqSessionData = objectPath.get(this._rawData, 'session.attributes') || {}
 
-	set vResLoop ( val ) {
-		this._vResLoop = val;
-	}
+    // parse Slots to object.
+    let slots = objectPath.get(rawData, 'request.intent.slots')
+    this._slots = {}
+    for (let slot in slots) { this._slots[slot] = slots[slot].value}
 
-	set skillData ( val ) {
-		this._skillData = val;
-	}
-	
-	//Exercise Datenbank
-	set dataBase ( val) {
-		this._dataBase = val;
-	}
+    this._vReq = {}
+    this._vRes = {}
+    this._vResLoop = []
 
-	set answer ( val ) {
-		this._answer = val;
-	}
+    this.card = null
 
-	set shouldEndSession ( val ) {
-		this._shouldEndSession = val;
-	}
+    console.log('---------------------')
+    console.log(JSON.stringify(objectPath.get(rawData, 'request'), null, 4))
+    console.log(JSON.stringify(this._reqSessionData, null, 4))
+    console.log('---------------------')
+  }
 
-	set repromptText ( val ) {
-		this._repromptText = val;
-	}
+  savePermanent (key, val) {
+    return userstore.save(this._userId, key, val)
+  }
 
-	set intentName ( val ) {
-		this._intentName = val;
-	}
+  getPermanent (key) {
+    return userstore.retrieve(this._userId, key)
+  }
 
-	set sessionData ( val ) {
-		this._sessionData = val;
-	}
+  set vReq (val) {
+    this._vReq = val
+  }
 
-	get shouldEndSession () { return this._shouldEndSession }
+  set vRes (val) {
+    this._vRes = val
+  }
 
-	get reqSessionData () { return this._reqSessionData }
+  set vResLoop (val) {
+    this._vResLoop = val
+  }
 
-	get vReq () { return this._vReq; }
+  set skillData (val) {
+    this._skillData = val
+  }
 
-	get sessionData () { return this._sessionData; }
+   //WorkoutPicture
+  set pictureURL (val) {
+    this._pictureURL = val
+  }
 
-	//Exercise Datenbank
-	get dataBase () { return this._dataBase; }
+  //VideoURL
+  set videoURL (val) {
+    this._videoURL = val
+  }
 
-	get vRes () { return this._vRes; }
+  //WorkoutDescription
+  set description (val) {
+      this._description = val
+  }
 
-	get vResLoop () { return this._vResLoop; }
+  //Exercise Datenbank
+  set dataBase (val) {
+    this._dataBase = val
+  }
 
-	get skillData () { return this._skillData; }
+  set answer (val) {
+    this._answer = val
+  }
 
-	get local () { return this._locale; }
+  set shouldEndSession (val) {
+    this._shouldEndSession = val
+  }
 
-	get answer () { return this._answer; }
+  set repromptText (val) {
+    this._repromptText = val
+  }
 
-	get deviceId () { return this._deviceID; }
+  set intentName (val) {
+    this._intentName = val
+  }
 
-	get userId () { return this._userId; }
+  set sessionData (val) {
+    this._sessionData = val
+  }
 
-	get sessionId () { return this._sessionID; }
+  get shouldEndSession () { return this._shouldEndSession }
 
-	get slots () { return this._slots; }
+  get reqSessionData () { return this._reqSessionData }
 
-	get answer () { return this._answer; }
+  get vReq () { return this._vReq }
 
-	get requestType () { return this._requestType;}
+  get sessionData () { return this._sessionData }
 
-	get intentName () {return this._intentName;}
+  //Exercise Database
+  get dataBase () { return this._dataBase }
+
+  //VideoURL
+  get videoURL () { return this._videoURL }
+
+  //PictureURL
+  get pictureURL () { return this._pictureURL }
+
+  get vRes () { return this._vRes }
+
+  get vResLoop () { return this._vResLoop }
+
+  get skillData () { return this._skillData }
+
+  get local () { return this._locale }
+
+  get answer () { return this._answer }
+
+  get deviceId () { return this._deviceID }
+
+  get userId () { return this._userId }
+
+  get sessionId () { return this._sessionID }
+
+  get slots () { return this._slots }
+
+  get answer () { return this._answer }
+
+  get requestType () { return this._requestType}
+
+  get intentName () {return this._intentName}
 
 }
 
-module.exports = AlexaRequestVO;
+module.exports = AlexaRequestVO
