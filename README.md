@@ -1,9 +1,10 @@
 
-# Alexa Skill Hello World
+# AlexaSkill GymMe
 
 ---
 
 - Start ngrok
+
 ```
 $ ngrok http 8080 --region eu
 ```
