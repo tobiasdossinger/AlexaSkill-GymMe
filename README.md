@@ -1,3 +1,6 @@
+![zeichenflache 1](https://user-images.githubusercontent.com/33021996/51713854-a4b11380-2033-11e9-8aee-bf96a49b463b.png)
+
+
 
 # AlexaSkill GymMe
 
