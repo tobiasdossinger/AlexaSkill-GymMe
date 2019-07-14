@@ -10,6 +10,7 @@ $ ngrok http 8080 --region eu
 ```
 
 **Darstellung im Appstore**
+
 <img src="https://user-images.githubusercontent.com/33021996/50667407-5c18b400-0fb9-11e9-8cfb-0c2d73fe9bf8.PNG" width="300">
 <img src="https://user-images.githubusercontent.com/33021996/50667398-4efbc500-0fb9-11e9-9a1c-8a39be68fd0b.jpg" width="300">
 
